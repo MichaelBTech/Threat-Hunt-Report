@@ -21,52 +21,8 @@ Attacker IP: 88.97.178.12 (Initial Access), 78.141.196.6 (C2)
 Attack Chain
 RDP Access —> Defender Exclusion —> Tool Download (certutil) —> Credential Dump (mimikatz) —> Exfiltration (discord) —> Persistence (schtasks).
 
-Stage
-What They Did
-Technique ID
-Evidence
-Initial Access
-Valid Accounts (RDP)
-T1078.002
-Logon from 88.97.178.12
-Execution
-PowerShell / Batch
-T1059.001
-wupdate.bat launching wupdate.ps1
-Persistence
-Scheduled Task
-T1053.005
-Task "Windows Update Check" running svchost.exe
-Defense Evasion
-Impair Defenses
-T1562.001
-Defender exclusions for %TEMP% and .exe
-Discovery
-System Network Config
-T1016
-arp -a, ipconfig /all, net user
-Credential Access
-LSASS Memory
-T1003.001
-mm.exe running sekurlsa::logonpasswords
-Lateral Movement
-Remote Desktop
-T1021.001
-mstsc /v:10.1.0.188
-Collection
-Archive via Utility
-T1560.001
-curl uploading export-data.zip
-Exfiltration
-Web Service (Discord)
-T1048.003
-curl POST to discord.com webhook
-Impact
-Data Encrypted/Stolen
-T1486
-Sensitive data exfiltrated
-
-
+<img width="614" height="629" alt="Table" src="https://github.com/user-attachments/assets/6880e656-e55e-4cf9-ad10-172a0f1295b2" />
+<img width="605" height="348" alt="Table2" src="https://github.com/user-attachments/assets/ee0413b1-5d7b-4892-8e63-a3972b5c582d" />
 
 KEY FINDINGS
 IOCs (Indicators of Compromise)
@@ -109,6 +65,7 @@ DeviceNetworkEvents
 | where LocalPort == 3389
 | project Timestamp, RemoteIP, RemotePort, LocalIP, Protocol
 
+<img width="522" height="327" alt="KQLResults1" src="https://github.com/user-attachments/assets/233ef5d1-ad84-41a8-8551-7e4bd6a43762" />
 
 Query 2: Discovery & Reconnaissance
 Goal: Detecting commands used by the attacker to map the local network (ARP table).
@@ -118,6 +75,8 @@ DeviceProcessEvents
 | where AccountName == "kenji.sato"
 | project Timestamp, FileName, ProcessCommandLine, FolderPath
 | order by Timestamp asc
+
+<img width="627" height="172" alt="KQLResults2" src="https://github.com/user-attachments/assets/589f4240-aeff-49a8-bb6c-a25f8bd093d9" />
 
 Commands like ARP.EXE and whoami.exe were used to map the compromised system’s identity as well as the surroundings of the local network.
 Query 3: Staging & Hiding Data
@@ -173,6 +132,7 @@ DeviceProcessEvents
 | where ProcessCommandLine contains "/create"
 | project Timestamp, ProcessCommandLine
 
+<img width="627" height="43" alt="Screenshot (209)" src="https://github.com/user-attachments/assets/e4a73f69-3a1b-4d30-a7fb-b057ddc86654" />
 
 Windows Update Check stood out as the mechanism of persistence. 
 
@@ -230,6 +190,7 @@ DeviceProcessEvents
 
 This query reveals an attempt by the attacker to clear the security logs.
 
+<img width="632" height="157" alt="Screenshot (210)" src="https://github.com/user-attachments/assets/f1091ea6-f358-4e9b-9e8e-412c3a6a968d" />
 
 Query 13: Initial Attack Script
 Goal: Finding the initial PowerShell or Batch scripts created in the user's Temp directory.
@@ -243,8 +204,7 @@ DeviceFileEvents
 
 The attacker’s initial Powershell script created in the Temp directory: wupdate.ps1.
 
-
-
+<img width="633" height="248" alt="Screenshot (211)" src="https://github.com/user-attachments/assets/8a09a207-c7ec-4582-8921-898d5cd2aece" />
 
 Query 14: Lateral Movement
 Goal: Identifying attempts to move to other systems using stored credentials (cmdkey) or Remote Desktop (mstsc).
@@ -256,3 +216,5 @@ DeviceProcessEvents
 | order by Timestamp asc
 
 Revealed an unsuccessful attempt at lateral movement to the following IP address:  10.1.0.188
+
+
